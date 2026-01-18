@@ -1,4 +1,11 @@
 name = "lulema"
-compatibility_date = "2024-04-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2025-01-18"
+compatibility_flag = "nodejs_compat"
 pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+NODE_ENV = "production"
+
+# Supabase Configuration
+SUPABASE_URL = "https://owdbswjdybicrbdvvrkj.supabase.co"
+SUPABASE_ANON_KEY = "sb_publishable_5QswQz8Q6r4LmApO7GqwQg_mwGiBkLi"
