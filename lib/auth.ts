@@ -4,6 +4,7 @@ import { getUserByName } from "./prisma";
 import { compare } from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
+  runtime: 'edge',  // 关键：指定 Edge 运行时
   session: {
     strategy: "jwt",
   },
