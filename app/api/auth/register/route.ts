@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { hash } from "bcrypt-ts";
+import { hash } from "bcryptjs";
 import { z } from "zod";
 
 export const runtime = 'nodejs';
