@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { hash } from "bcrypt-ts";
 import { startOfDay, subDays } from "date-fns";
 
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ async function main() {
   // 1. 创建陈柏文账号
   const name = "陈柏文";
   const password = "123123";
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await hash(password, 10);
 
   // 清理旧数据（如果存在）
   const existing = await prisma.user.findUnique({ where: { name } });

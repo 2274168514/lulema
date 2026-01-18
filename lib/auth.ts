@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { compare } from "bcrypt-ts";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const isPasswordValid = await bcrypt.compare(
+        const isPasswordValid = await compare(
           credentials.password,
           user.password
         );
