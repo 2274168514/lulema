@@ -1,14 +1,8 @@
 export const runtime = 'edge';
 
 import { NextResponse } from "next/server";
-export const runtime = 'edge';
-
 import { supabase } from "@/lib/supabase";
-export const runtime = 'edge';
-
 import { hash } from "bcryptjs";
-export const runtime = 'edge';
-
 import { z } from "zod";
 
 const registerSchema = z.object({
