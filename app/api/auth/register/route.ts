@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     // Check if user exists
     const { data: existingUser } = await supabase
-      .from('User')
+      .from('user')
       .select('id')
       .eq('name', name)
       .single();
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(password, 10);
 
     const { data: user, error } = await supabase
-      .from('User')
+      .from('user')
       .insert([{
         name,
         password: hashedPassword,

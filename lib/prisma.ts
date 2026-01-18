@@ -3,7 +3,7 @@ import { supabase } from './supabase'
 // Helper to get user by name
 export async function getUserByName(name: string) {
   const { data, error } = await supabase
-    .from('User')
+    .from('user')
     .select('*')
     .eq('name', name)
     .single()
@@ -19,7 +19,7 @@ export async function createUser(data: {
   age?: number
 }) {
   const { data: user, error } = await supabase
-    .from('User')
+    .from('user')
     .insert([{
       name: data.name,
       password: data.password,
@@ -40,7 +40,7 @@ export async function createUser(data: {
 // Helper to get user stats
 export async function getUserStats(userId: string) {
   const { data: user } = await supabase
-    .from('User')
+    .from('user')
     .select('merit, currentStreak, maxStreak, totalTakeoffs, startDate, lastCheckIn')
     .eq('id', userId)
     .single()
