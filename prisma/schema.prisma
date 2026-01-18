@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String    @unique // 昵称，用于登录
+  password      String    // Hashed
+  age           Int?      // 年龄（可选）
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Gamification Stats
+  merit         Int       @default(0) // 功德值 (木鱼 + 连续打卡)
+  currentStreak Int       @default(0) // 当前连续自律天数
+  maxStreak     Int       @default(0) // 最长连续自律天数
+  lastCheckIn   DateTime? // 上次打卡时间
+  startDate     DateTime  @default(now()) // 入道日期
+  totalTakeoffs Int       @default(0) // 累计起飞次数
+
+  // Relations
+  dailyRecords   DailyRecord[]
+  woodenFishLogs WoodenFishLog[]
+  posts          Post[]
+  likes          PostLike[]
+}
+
+model DailyRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now()) // 记录时间
+  status    String   // "PERSIST" | "TAKEOFF"
+  
+  // 起飞专用字段
+  duration  Int?     // 耗时（分钟）
+  method    String?  // 起飞方式: 日剧/韩剧/欧美/国产/动漫/直播/干起
+  
+  // 心得（自律和起飞都可填写）
+  note      String?
+  
+  createdAt DateTime @default(now())
+  
+  // 移除唯一约束，允许一天多次记录
+  @@index([userId, date])
+}
+
+model WoodenFishLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  count     Int      // 本次敲击次数
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  type      String   // "SELF_DISCIPLINE" | "DEER_KING" | 起飞方式名称
+  likes     Int      @default(0) // 缓存点赞总数
+  likedBy   PostLike[]
+  
+  createdAt DateTime @default(now())
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+}

@@ -1,26 +1,261 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* iOS 17+ 蓝白调色板 */
+    --color-primary: #007AFF;
+    --color-primary-light: #5AC8FA;
+    --color-success: #34C759;
+    --color-danger: #FF3B30;
+    --color-warning: #FFAA00;
+    
+    /* 渐变背景 */
+    --bg-gradient-start: #E8F4FC;
+    --bg-gradient-end: #FFFFFF;
+    
+    /* 液态玻璃效果 */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-blur: 20px;
+    
+    /* 文字颜色 */
+    --text-primary: #1C1C1E;
+    --text-secondary: #8E8E93;
+    --text-tertiary: #AEAEB2;
+    
+    /* 圆角 */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-full: 9999px;
   }
 }
 
+/* 全局渐变背景 */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 液态玻璃卡片 */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+/* 玻璃导航栏 */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* 胶囊按钮 - 主要 */
+.btn-capsule {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn-capsule:active {
+  transform: scale(0.97);
+}
+
+.btn-capsule-primary {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
+}
+
+.btn-capsule-success {
+  background: var(--color-success);
+  color: white;
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.3);
+}
+
+.btn-capsule-danger {
+  background: var(--color-danger);
+  color: white;
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.3);
+}
+
+.btn-capsule-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  color: var(--color-primary);
+}
+
+/* SOS 浮动球 */
+.sos-button {
+  background: linear-gradient(135deg, #FFAA00 0%, #FF5533 100%);
+  box-shadow: 0 4px 20px rgba(255, 100, 50, 0.4);
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  border: none;
+}
+
+.sos-button:active {
+  transform: scale(0.95);
+}
+
+/* 输入框样式 */
+.input-field {
+  width: 100%;
+  padding: 16px 20px;
+  background: rgba(142, 142, 147, 0.12);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-field::placeholder {
+  color: var(--text-tertiary);
+}
+
+.input-field:focus {
+  background: rgba(142, 142, 147, 0.18);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* 安全区适配 */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 隐藏滚动条 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 主圆环容器 */
+.main-circle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    var(--glass-shadow),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-circle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* 缩小版主圆环 */
+.main-circle-small {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    var(--glass-shadow),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-circle-small::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* 日历容器样式覆盖 */
+.calendar-container .rdp {
+  --rdp-cell-size: 36px;
+}
+
+.calendar-container .rdp-day_selected {
+  background-color: var(--color-primary) !important;
+}
+
+/* 日历标记样式 - 绿色自律，红色起飞 */
+.calendar-day-persist {
+  background-color: var(--color-success) !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.calendar-day-takeoff {
+  background-color: var(--color-danger) !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+.calendar-day-both {
+  background: linear-gradient(135deg, var(--color-success) 50%, var(--color-danger) 50%) !important;
+  color: white !important;
+  border-radius: 50%;
 }
