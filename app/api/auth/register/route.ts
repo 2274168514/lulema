@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { hash } from "bcryptjs";
 import { z } from "zod";
-
-export const runtime = 'nodejs';
 
 const registerSchema = z.object({
   name: z.string().min(2, "昵称至少2个字符"),
@@ -16,9 +14,12 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { name, password, age } = registerSchema.parse(body);
 
-    const existingUser = await prisma.user.findUnique({
-      where: { name },
-    });
+    // Check if user exists
+    const { data: existingUser } = await supabase
+      .from('User')
+      .select('id')
+      .eq('name', name)
+      .single();
 
     if (existingUser) {
       return NextResponse.json(
@@ -29,26 +30,32 @@ export async function POST(req: Request) {
 
     const hashedPassword = await hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: {
+    const { data: user, error } = await supabase
+      .from('User')
+      .insert([{
         name,
         password: hashedPassword,
-        age: age ? Number(age) : null,
-      },
-    });
+        age: age || null,
+        merit: 0,
+        currentStreak: 0,
+        maxStreak: 0,
+        totalTakeoffs: 0,
+        startDate: new Date().toISOString()
+      }])
+      .select()
+      .single();
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    if (error) throw error;
 
     return NextResponse.json(
-      { user: userWithoutPassword, message: "注册成功" },
+      { user: { id: user.id, name: user.name }, message: "注册成功" },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Register error:", error);
-    if (error instanceof z.ZodError) {
+    if (error.name === 'ZodError') {
       return NextResponse.json(
-        { message: error.errors[0]?.message || "输入格式错误" },
+        { message: error.errors?.[0]?.message || "输入格式错误" },
         { status: 400 }
       );
     }
