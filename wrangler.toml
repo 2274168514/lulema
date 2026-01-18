@@ -1,6 +1,6 @@
 name = "lulema"
 compatibility_date = "2025-01-18"
-compatibility_flag = "nodejs_compat"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
