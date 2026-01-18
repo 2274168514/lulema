@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
-import { compare } from "bcrypt-ts";
+import { compare } from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
   session: {
