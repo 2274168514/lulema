@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { startOfDay, endOfDay } from "date-fns";
 
+export const runtime = 'edge';
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
