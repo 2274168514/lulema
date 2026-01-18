@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { hash } from "bcrypt-ts";
+import { hash } from "bcryptjs";
 import { startOfDay, subDays } from "date-fns";
 
 const prisma = new PrismaClient();
