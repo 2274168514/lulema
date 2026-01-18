@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "pages:build": "npx prisma generate && npx @cloudflare/next-on-pages"
+    "pages:build": "npx prisma generate && npx @cloudflare/next-on-pages --experimental-node-based-compilation"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

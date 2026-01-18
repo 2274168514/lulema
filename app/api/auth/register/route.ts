@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { hash } from "bcrypt-ts";
 import { z } from "zod";
 
+export const runtime = 'nodejs';
+
 const registerSchema = z.object({
   name: z.string().min(2, "昵称至少2个字符"),
   password: z.string().min(6, "密码至少6位"),
