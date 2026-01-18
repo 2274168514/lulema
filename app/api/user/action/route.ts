@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { startOfDay, endOfDay } from "date-fns";
-
-export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -19,11 +17,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Invalid type" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
+  const { data: user, error: userError } = await supabase
+    .from('user')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
 
-  if (!user) {
+  if (userError || !user) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
 
@@ -31,72 +31,67 @@ export async function POST(req: Request) {
   const todayStart = startOfDay(today);
   const todayEnd = endOfDay(today);
 
-  // 检查今日是否已自律打卡
-  const todayPersist = await prisma.dailyRecord.findFirst({
-    where: {
-      userId: user.id,
-      status: "PERSIST",
-      date: {
-        gte: todayStart,
-        lte: todayEnd,
-      },
-    },
-  });
+  const { data: todayPersist } = await supabase
+    .from('dailyRecord')
+    .select('*')
+    .eq('userId', user.id)
+    .eq('status', "PERSIST")
+    .gte('date', todayStart.toISOString())
+    .lte('date', todayEnd.toISOString())
+    .maybeSingle();
 
   let newStreak = user.currentStreak;
   let newMerit = user.merit;
   let newTotalTakeoffs = user.totalTakeoffs;
 
   if (type === "PERSIST") {
-    // 自律：一天只能打卡一次
     if (todayPersist) {
       return NextResponse.json({ message: "今日已打卡自律" }, { status: 400 });
     }
     newStreak += 1;
     newMerit += 10;
   } else {
-    // 起飞：一天可以多次
     newTotalTakeoffs += 1;
-    newMerit += 1; // 安慰分
-    // 只有今天没自律打卡时才重置连续天数
+    newMerit += 1;
     if (!todayPersist) {
       newStreak = 0;
     }
   }
 
-  // 事务更新
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: user.id },
-      data: {
-        currentStreak: newStreak,
-        maxStreak: Math.max(newStreak, user.maxStreak),
-        merit: newMerit,
-        totalTakeoffs: newTotalTakeoffs,
-        lastCheckIn: new Date(),
-      },
-    }),
-    prisma.dailyRecord.create({
-      data: {
-        userId: user.id,
-        date: new Date(),
-        status: type,
-        duration: type === "TAKEOFF" ? duration || null : null,
-        method: type === "TAKEOFF" ? method || null : null,
-        note: note || null,
-      },
-    }),
-  ]);
+  // Update user
+  await supabase
+    .from('user')
+    .update({
+      currentStreak: newStreak,
+      maxStreak: Math.max(newStreak, user.maxStreak),
+      merit: newMerit,
+      totalTakeoffs: newTotalTakeoffs,
+      lastCheckIn: new Date().toISOString()
+    })
+    .eq('id', user.id);
 
-  // 如果有心得，自动发布到社区
+  // Create daily record
+  await supabase
+    .from('dailyRecord')
+    .insert([{
+      userId: user.id,
+      date: new Date().toISOString(),
+      status: type,
+      duration: type === "TAKEOFF" ? duration || null : null,
+      method: type === "TAKEOFF" ? method || null : null,
+      note: note || null
+    }]);
+
+  // Create post if note exists
   if (note && note.trim()) {
-    await prisma.post.create({
-      data: {
+    await supabase
+      .from('post')
+      .insert([{
         userId: user.id,
         content: note,
         type: type === "PERSIST" ? "SELF_DISCIPLINE" : method || "TAKEOFF",
-      },
-    });
+        likes: 0
+      }]);
   }
 
   return NextResponse.json({ 

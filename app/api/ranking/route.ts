@@ -1,43 +1,28 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-
-export const runtime = 'nodejs';
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  const streakRank = await prisma.user.findMany({
-    orderBy: { currentStreak: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      currentStreak: true,
-      totalTakeoffs: true, // Needed for achievement badge
-    },
-  });
+  const { data: streakRank } = await supabase
+    .from('user')
+    .select('id, name, image, currentStreak, totalTakeoffs')
+    .order('currentStreak', { ascending: false })
+    .limit(50);
 
-  const meritRank = await prisma.user.findMany({
-    orderBy: { merit: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      merit: true,
-      totalTakeoffs: true, // Needed for achievement badge
-    },
-  });
+  const { data: meritRank } = await supabase
+    .from('user')
+    .select('id, name, image, merit, totalTakeoffs')
+    .order('merit', { ascending: false })
+    .limit(50);
 
-  const takeoffRank = await prisma.user.findMany({
-    orderBy: { totalTakeoffs: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      name: true,
-      image: true,
-      totalTakeoffs: true,
-    },
-  });
+  const { data: takeoffRank } = await supabase
+    .from('user')
+    .select('id, name, image, totalTakeoffs')
+    .order('totalTakeoffs', { ascending: false })
+    .limit(50);
 
-  return NextResponse.json({ streakRank, meritRank, takeoffRank });
+  return NextResponse.json({ 
+    streakRank: streakRank || [], 
+    meritRank: meritRank || [], 
+    takeoffRank: takeoffRank || [] 
+  });
 }

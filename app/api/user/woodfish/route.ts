@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
-
-export const runtime = 'nodejs';
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -17,21 +15,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Invalid count" }, { status: 400 });
   }
 
-  // Update Merit and Log
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        merit: { increment: count },
-      },
-    }),
-    prisma.woodenFishLog.create({
-      data: {
-        userId: session.user.id,
-        count: count,
-      },
-    }),
-  ]);
+  // Get current user
+  const { data: user } = await supabase
+    .from('user')
+    .select('merit')
+    .eq('id', session.user.id)
+    .single();
+
+  if (user) {
+    // Update merit
+    await supabase
+      .from('user')
+      .update({ merit: user.merit + count })
+      .eq('id', session.user.id);
+  }
+
+  // Create log
+  await supabase
+    .from('woodenFishLog')
+    .insert([{
+      userId: session.user.id,
+      count: count,
+      createdAt: new Date().toISOString()
+    }]);
 
   return NextResponse.json({ success: true, added: count });
 }

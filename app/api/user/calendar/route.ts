@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { startOfMonth, endOfMonth, startOfDay } from "date-fns";
-
-export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -20,25 +18,17 @@ export async function GET(req: Request) {
   const monthStart = startOfMonth(date);
   const monthEnd = endOfMonth(date);
 
-  const records = await prisma.dailyRecord.findMany({
-    where: {
-      userId: session.user.id,
-      date: {
-        gte: monthStart,
-        lte: monthEnd,
-      },
-    },
-    select: {
-      date: true,
-      status: true,
-    },
-  });
+  const { data: records } = await supabase
+    .from('dailyRecord')
+    .select('date, status')
+    .eq('userId', session.user.id)
+    .gte('date', monthStart.toISOString())
+    .lte('date', monthEnd.toISOString());
 
-  // 按日期分组
-  const calendarData: Record<string, { persist: boolean; takeoff: boolean }> = {};
+  const calendarData = {};
   
-  records.forEach((record) => {
-    const dateKey = startOfDay(record.date).toISOString();
+  (records || []).forEach((record) => {
+    const dateKey = startOfDay(new Date(record.date)).toISOString();
     if (!calendarData[dateKey]) {
       calendarData[dateKey] = { persist: false, takeoff: false };
     }

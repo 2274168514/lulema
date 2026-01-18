@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 import { startOfDay, endOfDay } from "date-fns";
-
-export const runtime = 'nodejs';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -16,28 +14,26 @@ export async function GET() {
   const todayStart = startOfDay(today);
   const todayEnd = endOfDay(today);
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      dailyRecords: {
-        where: {
-          date: {
-            gte: todayStart,
-            lte: todayEnd,
-          },
-        },
-      },
-    },
-  });
+  const { data: user, error } = await supabase
+    .from('user')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
 
-  if (!user) {
+  if (error || !user) {
     return NextResponse.json({ message: "User not found" }, { status: 404 });
   }
 
-  // 今日自律/起飞状态
-  const todayRecords = user.dailyRecords;
-  const hasPersist = todayRecords.some(r => r.status === "PERSIST");
-  const todayTakeoffs = todayRecords.filter(r => r.status === "TAKEOFF").length;
+  const { data: todayRecords } = await supabase
+    .from('dailyRecord')
+    .select('*')
+    .eq('userId', session.user.id)
+    .gte('date', todayStart.toISOString())
+    .lte('date', todayEnd.toISOString());
+
+  const records = todayRecords || [];
+  const hasPersist = records.some(r => r.status === "PERSIST");
+  const todayTakeoffs = records.filter(r => r.status === "TAKEOFF").length;
 
   return NextResponse.json({
     currentStreak: user.currentStreak,
