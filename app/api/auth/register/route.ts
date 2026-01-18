@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       data: {
         name,
         password: hashedPassword,
-        age: age || null,
+        age: age ? Number(age) : null,
       },
     });
 
@@ -45,6 +45,7 @@ export async function POST(req: Request) {
       { status: 201 }
     );
   } catch (error) {
+    console.error("Register error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { message: error.errors[0]?.message || "输入格式错误" },
