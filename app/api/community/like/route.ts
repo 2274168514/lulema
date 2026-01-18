@@ -1,17 +1,9 @@
 export const runtime = 'edge';
 
 import { NextResponse } from "next/server";
-export const runtime = 'edge';
-
 import { getServerSession } from "next-auth";
-export const runtime = 'edge';
-
 import { authOptions } from "@/lib/auth";
-export const runtime = 'edge';
-
 import prisma from "@/lib/prisma";
-
-export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

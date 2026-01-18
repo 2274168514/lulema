@@ -1,17 +1,9 @@
 export const runtime = 'edge';
 
 import { NextResponse } from "next/server";
-export const runtime = 'edge';
-
 import { getServerSession } from "next-auth";
-export const runtime = 'edge';
-
 import { authOptions } from "@/lib/auth";
-export const runtime = 'edge';
-
 import { supabase } from "@/lib/supabase";
-export const runtime = 'edge';
-
 import { startOfMonth, endOfMonth, startOfDay } from "date-fns";
 
 export async function GET(req: Request) {
