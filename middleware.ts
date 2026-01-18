@@ -1,14 +1,7 @@
-import { withAuth } from "next-auth/middleware";
+import { auth } from "@/auth";
 
-export default withAuth({
-  pages: {
-    signIn: "/login",
-  },
-});
+export default auth;
 
 export const config = {
-  matcher: [
-    // 排除登录、注册、API auth 路由和静态资源
-    "/((?!api/auth|login|register|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
